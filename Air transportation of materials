@@ -1,0 +1,83 @@
+#物资空运问题
+# https://blog.csdn.net/weixin_39625987/article/details/110972092
+from pyomo.environ import *
+
+#create model
+model = ConcreteModel()
+
+# declare decision variables
+c111 = 2.19
+c112 = 2.78
+c121 = 0.44
+c122 = 0.56
+c131 = 0.82
+c132 = 1.04
+c211 = 0.48
+c212 = 0.61
+c221 = 1.77
+c222 = 2.25
+c231 = 1.35
+c232 = 1.71
+model.x111 = Var(domain = NonNegativeReals) # 非0实数
+model.x121 = Var(domain = NonNegativeReals) # 非0实数
+model.x131 = Var(domain = NonNegativeReals) # 非0实数
+model.x211 = Var(domain = NonNegativeReals) # 非0实数
+model.x221 = Var(domain = NonNegativeReals) # 非0实数
+model.x231 = Var(domain = NonNegativeReals) # 非0实数
+model.x112 = Var(domain = NonNegativeReals) # 非0实数
+model.x122 = Var(domain = NonNegativeReals) # 非0实数
+model.x132 = Var(domain = NonNegativeReals) # 非0实数
+model.x212 = Var(domain = NonNegativeReals) # 非0实数
+model.x222 = Var(domain = NonNegativeReals) # 非0实数
+model.x232 = Var(domain = NonNegativeReals) # 非0实数
+
+
+#declare objective
+model.profit = Objective(expr = c111 * model.x111 +
+                                c121 * model.x121 +
+                                c131 * model.x131 +
+                                c211 * model.x211 +
+                                c221 * model.x221 +
+                                c231 * model.x231 +
+                                c112 * model.x112 +
+                                c122 * model.x122 +
+                                c132 * model.x132 +
+                                c212 * model.x212 +
+                                c222 * model.x222 +
+                                c232 * model.x232 , sense=minimize)
+
+#declare constraints
+# 出货对于货源的要求  供给能力的限制
+model.laborA = Constraint(expr = 5*(model.x111 + model.x121 +
+                                model.x131) + 3*(model.x112 +
+                                model.x122 + model.x132) <= 200)
+model.laborB = Constraint(expr = 5*(model.x211 + model.x221 +
+                                model.x231) + 3*(model.x212+
+                                model.x222 + model.x232) <= 250)
+# 收货能力的要求
+model.shouhuo1 = Constraint(expr = 5*(model.x111+model.x211)+
+                                 3*(model.x112+model.x212) >= 128)
+model.shouhuo2 = Constraint(expr = 5*(model.x121+model.x221)+
+                                 3*(model.x122+model.x222) >= 134)
+model.shouhuo3 = Constraint(expr = 5*(model.x131+model.x231)+
+                                 3*(model.x132+model.x232) >= 140)
+model.pprint()
+
+
+
+# 求解问题
+SolverFactory('glpk').solve(model).write()
+
+# display solution
+print('nProfit = ', model.profit())
+
+# print('nDecision Variables')
+# print('x = ', model.x111())
+# print('y = ', model.y())
+#
+# print('nConstraints')
+# print('Demand  = ', model.demand())
+# print('Labor A = ', model.laborA())
+# print('Labor B = ', model.laborB())
+
+
